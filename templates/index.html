@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Skeleton application demoing Heroku and Flask integration.">
+    <meta name="author" content="@gotoariel">
+    <!-- <link rel="icon" href="favicon.ico"> -->
+
+    <title>Ticker Tracker!</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+    <!-- Styles -->
+    <style>
+      .my-label {
+        font-size: 2.0em;
+        font-family: Verdana;
+      }
+
+      .my-textbox {
+        width: 50%;
+        font-size: 1.5em;
+        border-radius: 10px;
+        text-transform: uppercase;
+        padding: 10px;
+        border: 1px solid black;
+      }
+
+      .my-textbox:focus {
+        border: 2px solid black;
+      }
+
+      .my-button {
+        font-size: 1.5em;
+        background-color: green;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        box-shadow: 3px 3px;
+        border-radius: 10px;
+        -webkit-text-stroke: 1px black;
+        -webkit-text-fill-color: white;
+        font-weight: bolder;
+      }
+
+      .my-button:hover {
+        background-color: darkgreen;
+        box-shadow: 5px 5px gray;
+        }
+
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12 text-left">
+			<form action="Graph" method="POST">
+				<label class="my-label" for="ticker">Which ticker do you want to display the closing price for?</label>
+				<input class="my-textbox" value="GOOG" name="ticker" id="ticker" type="text"/>
+				<input class="my-button" type="submit" value="Submit"/>
+			</form>
+        </div>
+      </div>
+    </div>
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  </body>
+</html>
