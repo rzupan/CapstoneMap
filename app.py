@@ -1,35 +1,33 @@
 from flask import Flask, render_template, request
 import pandas as pd
-from bokeh.plotting import figure
-from bokeh.embed import components
+import folium
+import dill
+import branca
 import requests
 
 app = Flask(__name__)
 #app.config['EXPLAIN_TEMPLATE_LOADING'] = True
 
-def plotInfo(ticker):
+outL = dill.load(open('outlierCrash.pkd','rb'))
 
-    #My personal API key
-    key = 'YY749BF6ETJWL2A7'
+lat = []
+lon = []
+val = []
 
-    #Define the url and grab the json of the data
-    url = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&&symbol={}&apikey={}'.format(ticker, key)
-    response = requests.get(url)
+for item in outL:
+    lat.append(item[0])
+    lon.append(item[1])
+    val.append(outL[item])
+    
+outLDF = pd.DataFrame({'latitude': lat, 'longitude': lon, 'count':val})
 
-    #Define the dataframe as the Daily time series
-    df = pd.DataFrame(response.json()['Time Series (Daily)'])
-
-    #Define some plot values
-    p = figure(title=ticker+" Close Price", x_axis_type='datetime', x_axis_label='Date', y_axis_label='Price')
-    p.title.align = "center"
-    p.title.text_color = "black"
-    p.title.text_font_size = "25px"
-
-    #Define the line plot as the datetime data and the closing price of the given Ticker.
-    #Note this is only for the most recent 31 days of available data (i.e., 1 month)
-    p.line(df.iloc[3,0:30].index.values.astype('datetime64[ns]'), df.iloc[3,0:30].values.astype('float64'), line_width=2)
-
-    return p
+def geocode(address):
+    params = { 'format'        :'json', 
+               'addressdetails': 1, 
+               'q'             : address}
+    headers = { 'user-agent'   : 'TDI' }   #  Need to supply a user agent other than the default provided 
+                                           #  by requests for the API to accept the query.
+    return requests.get('http://nominatim.openstreetmap.org/search', params=params, headers=headers)
 
 @app.route('/')
 def index():
@@ -39,12 +37,32 @@ def index():
 
 @app.route('/Graph', methods=['GET', 'POST'])
 def show_Graph():
+    
+    response = geocode(request.form['ticker'])
+    
+    us_map = folium.Map(location=[response.json()[0]['lat'], response.json()[0]['lon']], zoom_start=13)
 
-    #Initialize the plot and then add the components to the plot.
-    myPlots = []
-    myPlots.append(components(plotInfo(request.form['ticker'])))
+    folium.Marker([response.json()[0]['lat'], response.json()[0]['lon']], tooltip="<i>"+request.form['ticker']+"</i>").add_to(us_map)
 
-    return render_template('Graph.html', plots=myPlots)
+    cmap = branca.colormap.LinearColormap(colors=['blue','red'], vmin=42,vmax=853)
+    cmap = cmap.to_step(index=[0, 100, 200, 300, 400, 500, 600, 700, 800, 900])
+    cmap.caption = 'Number of Car Crashes'
+    cmap.add_to(us_map)
+
+    for lat,lon,count in zip(outLDF['latitude'],outLDF['longitude'],outLDF['count']):
+        folium.CircleMarker(
+            [lat,lon],
+            radius = .06*count,
+            popup = ('Location: ' + str(lat) + ', ' + str(lon) + '<br>'
+                     'Crashes: ' + str(count)
+                    ),
+            color='b',
+            fill_color=cmap(count),
+            fill=True,
+            fill_opacity=1
+            ).add_to(us_map)
+    
+    return us_map._repr_html_()
 
 
 if __name__ == "__main__":
