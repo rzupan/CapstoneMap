@@ -38,11 +38,11 @@ def index():
 @app.route('/Graph', methods=['GET', 'POST'])
 def show_Graph():
     
-    response = geocode(request.form['ticker'])
+    response = geocode(request.form['adr'])
     
     us_map = folium.Map(location=[response.json()[0]['lat'], response.json()[0]['lon']], zoom_start=13)
 
-    folium.Marker([response.json()[0]['lat'], response.json()[0]['lon']], tooltip="<i>"+request.form['ticker']+"</i>").add_to(us_map)
+    folium.Marker([response.json()[0]['lat'], response.json()[0]['lon']], tooltip="<i>"+request.form['adr']+"</i>").add_to(us_map)
 
     cmap = branca.colormap.LinearColormap(colors=['blue','red'], vmin=42,vmax=853)
     cmap = cmap.to_step(index=[0, 100, 200, 300, 400, 500, 600, 700, 800, 900])
