@@ -39,30 +39,34 @@ def index():
 def show_Graph():
     
     response = geocode(request.form['adr'])
+    if response.json():
+            
+        us_map = folium.Map(location=[response.json()[0]['lat'], response.json()[0]['lon']], zoom_start=13)
+        
+        folium.Marker([response.json()[0]['lat'], response.json()[0]['lon']], tooltip="<i>"+request.form['adr']+"</i>").add_to(us_map)
+        
+        cmap = branca.colormap.LinearColormap(colors=['blue','red'], vmin=42,vmax=853)
+        cmap = cmap.to_step(index=[0, 100, 200, 300, 400, 500, 600, 700, 800, 900])
+        cmap.caption = 'Number of Car Crashes'
+        cmap.add_to(us_map)
+        
+        for lat,lon,count in zip(outLDF['latitude'],outLDF['longitude'],outLDF['count']):
+            folium.CircleMarker(
+                [lat,lon],
+                radius = .06*count,
+                popup = ('Location: ' + str(lat) + ', ' + str(lon) + '<br>'
+                         'Crashes: ' + str(count)
+                        ),
+                color='b',
+                fill_color=cmap(count),
+                fill=True,
+                fill_opacity=1
+                ).add_to(us_map)
+        return us_map._repr_html_()
     
-    us_map = folium.Map(location=[response.json()[0]['lat'], response.json()[0]['lon']], zoom_start=13)
-
-    folium.Marker([response.json()[0]['lat'], response.json()[0]['lon']], tooltip="<i>"+request.form['adr']+"</i>").add_to(us_map)
-
-    cmap = branca.colormap.LinearColormap(colors=['blue','red'], vmin=42,vmax=853)
-    cmap = cmap.to_step(index=[0, 100, 200, 300, 400, 500, 600, 700, 800, 900])
-    cmap.caption = 'Number of Car Crashes'
-    cmap.add_to(us_map)
-
-    for lat,lon,count in zip(outLDF['latitude'],outLDF['longitude'],outLDF['count']):
-        folium.CircleMarker(
-            [lat,lon],
-            radius = .06*count,
-            popup = ('Location: ' + str(lat) + ', ' + str(lon) + '<br>'
-                     'Crashes: ' + str(count)
-                    ),
-            color='b',
-            fill_color=cmap(count),
-            fill=True,
-            fill_opacity=1
-            ).add_to(us_map)
-    
-    return us_map._repr_html_()
+    else:
+        
+        return render_template('mistake.html')
 
 
 if __name__ == "__main__":
