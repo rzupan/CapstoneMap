@@ -9,6 +9,7 @@ app = Flask(__name__)
 #app.config['EXPLAIN_TEMPLATE_LOADING'] = True
 
 outL = dill.load(open('outlierCrash.pkd','rb'))
+recs = dill.load(open('recommendations.pkd','rb'))
 
 lat = []
 lon = []
@@ -55,7 +56,8 @@ def show_Graph():
                 [lat,lon],
                 radius = .06*count,
                 popup = ('Location: ' + str(lat) + ', ' + str(lon) + '<br>'
-                         'Crashes: ' + str(count)
+                         'Crashes: ' + str(count) + '<br>'
+                         'Potential Risk: ' + recs[(lat,lon)]
                         ),
                 color='b',
                 fill_color=cmap(count),
